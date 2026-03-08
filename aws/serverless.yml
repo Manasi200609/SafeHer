@@ -1,0 +1,315 @@
+service: safeher
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-south-1        # Mumbai — closest to India
+  stage: ${opt:stage, 'prod'}
+  memorySize: 256
+  timeout: 15
+  logRetentionInDays: 30
+  deploymentMethod: direct
+  deploymentBucket:
+    name: safeher-sls-deploy-138356843370-ap-south-1
+  environment:
+    # Used by auth Lambdas to talk to Cognito
+    COGNITO_USER_POOL_ID: !Ref SafeHerUserPool
+    COGNITO_CLIENT_ID:    !Ref SafeHerUserPoolClient
+    # NEW: Audio Bucket reference for our AI Pipeline
+    AUDIO_BUCKET: safeher-media-${self:provider.stage}
+
+  # ── HTTP API (API Gateway v2) ────────────────────────────
+  httpApi:
+    cors: true
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action: ["dynamodb:*"]
+          Resource:
+            - !GetAtt UsersTable.Arn
+            - !GetAtt ContactsTable.Arn
+            - !GetAtt LogsTable.Arn
+            - !Sub "${UsersTable.Arn}/index/*"
+        - Effect: Allow
+          Action: ["sns:Publish"]           # SOS SMS alerts
+          Resource: "*"
+        - Effect: Allow
+          Action: ["cloudwatch:PutMetricData"]
+          Resource: "*"
+        - Effect: Allow
+          Action: ["cognito-idp:AdminConfirmSignUp"]
+          Resource: !GetAtt SafeHerUserPool.Arn
+        - Effect: Allow
+          Action: ["s3:PutObject", "s3:GetObject"]
+          Resource: !Sub "${MediaBucket.Arn}/*"
+        # ── NEW: AI Pipeline Permissions ──
+        - Effect: Allow
+          Action: 
+            - "transcribe:StartTranscriptionJob"
+            - "transcribe:GetTranscriptionJob"
+          Resource: "*"
+        - Effect: Allow
+          Action: ["bedrock:InvokeModel"]
+          Resource: "*"
+        - Effect: Allow
+          Action: ["polly:SynthesizeSpeech"]
+          Resource: "*"
+
+layers:
+  Utils:
+    path: layers
+    name: safeher-utils
+    compatibleRuntimes: [nodejs18.x]
+
+functions:
+
+  # ── Auth ──────────────────────────────────────────────────
+  authRegister:
+    handler: lambdas/auth/auth.register
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: POST, path: /auth/register }
+
+  authLogin:
+    handler: lambdas/auth/auth.login
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: POST, path: /auth/login }
+
+  authProfile:
+    handler: lambdas/auth/auth.getProfile
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: GET, path: /auth/profile }
+
+  authSettings:
+    handler: lambdas/auth/auth.updateSettings
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: PUT, path: /auth/settings }
+
+  # ── Safety ────────────────────────────────────────────────
+  safetyStatus:
+    handler: lambdas/safety/safety.getScore
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: GET, path: /safety/status }
+
+  safetyScore:
+    handler: lambdas/safety/safety.updateScore
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: POST, path: /safety/score }
+
+  safetySOS:
+    handler: lambdas/safety/safety.triggerSOS
+    layers: [!Ref UtilsLambdaLayer]
+    timeout: 29                    # Extra time for sending multiple SMSes
+    events:
+      - httpApi: { method: POST, path: /safety/sos }
+
+  safetyHistory:
+    handler: lambdas/safety/safety.getHistory
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: GET, path: /safety/history }
+
+  # ── NEW: GenAI Safety Pipeline ────────────────────────────
+  # ── NEW: GenAI Safety Pipeline ────────────────────────────
+  safetyUploadUrl:
+    handler: lambdas/safety/safety.getUploadUrl
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: GET, path: /safety/upload-url }
+
+  safetyCoverCall:
+    handler: lambdas/safety/safety.generateCoverCall
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: POST, path: /safety/cover-call }
+
+  safetyProcessAudio:
+    handler: lambdas/safety/safety.processAudio
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - s3:
+          bucket: ${self:provider.environment.AUDIO_BUCKET}
+          event: s3:ObjectCreated:*
+          existing: true
+
+  safetyAiDispatcher:
+    handler: lambdas/safety/safety.handleTranscript
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - eventBridge:
+          pattern:
+            source: ["aws.transcribe"]
+            detail-type: ["Transcribe Job State Change"]
+            detail:
+              TranscriptionJobStatus: ["COMPLETED"]
+
+  # ── Contacts ─────────────────────────────────────────────
+  contactsList:
+    handler: lambdas/contacts/contacts.list
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: GET, path: /contacts }
+
+  contactsAdd:
+    handler: lambdas/contacts/contacts.add
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: POST, path: /contacts }
+
+  contactsUpdate:
+    handler: lambdas/contacts/contacts.update
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: PUT, path: "/contacts/{id}" }
+
+  contactsDelete:
+    handler: lambdas/contacts/contacts.remove
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: DELETE, path: "/contacts/{id}" }
+
+  # ── Logs ─────────────────────────────────────────────────
+  logsList:
+    handler: lambdas/logs/logs.list
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: GET, path: /logs }
+
+  logsStats:
+    handler: lambdas/logs/logs.stats
+    layers: [!Ref UtilsLambdaLayer]
+    events:
+      - httpApi: { method: GET, path: /logs/stats }
+
+# ── CloudFormation Resources ──────────────────────────────
+resources:
+  Resources:
+
+    # ── 1. Cognito ───────────────────────────────────────────
+    SafeHerUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: safeher-${self:provider.stage}
+        AutoVerifiedAttributes: [email]
+        UsernameAttributes: [email]
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireNumbers: true
+            RequireUppercase: false
+            RequireSymbols: false
+        Schema:
+          - { Name: name, AttributeDataType: String, Required: true, Mutable: true }
+
+    SafeHerUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: safeher-app
+        UserPoolId: !Ref SafeHerUserPool
+        ExplicitAuthFlows:
+          - ALLOW_USER_PASSWORD_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+        GenerateSecret: false
+
+    # ── 2. DynamoDB Tables ───────────────────────────────────
+    UsersTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: SafeHer-Users
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - { AttributeName: userId, AttributeType: S }
+          - { AttributeName: email,  AttributeType: S }
+        KeySchema:
+          - { AttributeName: userId, KeyType: HASH }
+        GlobalSecondaryIndexes:
+          - IndexName: email-index
+            KeySchema: [{ AttributeName: email, KeyType: HASH }]
+            Projection: { ProjectionType: ALL }
+
+    ContactsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: SafeHer-Contacts
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - { AttributeName: userId,    AttributeType: S }
+          - { AttributeName: contactId, AttributeType: S }
+        KeySchema:
+          - { AttributeName: userId,    KeyType: HASH }
+          - { AttributeName: contactId, KeyType: RANGE }
+
+    LogsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: SafeHer-SafetyLogs
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - { AttributeName: userId,    AttributeType: S }
+          - { AttributeName: timestamp, AttributeType: S }
+        KeySchema:
+          - { AttributeName: userId,    KeyType: HASH }
+          - { AttributeName: timestamp, KeyType: RANGE }
+        TimeToLiveSpecification:
+          AttributeName: expiresAt
+          Enabled: true
+
+    # ── 3. S3 Media Bucket ───────────────────────────────────
+    MediaBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        # NEW: Explicitly naming the bucket so the AI triggers can attach to it
+        BucketName: ${self:provider.environment.AUDIO_BUCKET}
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+        OwnershipControls:
+          Rules:
+            - ObjectOwnership: BucketOwnerEnforced
+        BucketEncryption:
+          ServerSideEncryptionConfiguration:
+            - ServerSideEncryptionByDefault:
+                SSEAlgorithm: AES256
+        LifecycleConfiguration:
+          Rules:
+            - Id: expire-temp-uploads
+              Status: Enabled
+              ExpirationInDays: 30
+              Prefix: "temp/"
+
+    # CloudWatch Alarm — SOS Alert
+    SOSAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: SafeHer-SOS-Triggered
+        MetricName: SOSTriggers
+        Namespace: SafeHer
+        Statistic: Sum
+        Period: 60
+        EvaluationPeriods: 1
+        Threshold: 1
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+
+  Outputs:
+    ApiUrl:
+      Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+      Export: { Name: SafeHer-API-URL }
+    UserPoolId:
+      Value: !Ref SafeHerUserPool
+      Export: { Name: SafeHer-UserPool-ID }
+    ClientId:
+      Value: !Ref SafeHerUserPoolClient
+      Export: { Name: SafeHer-Client-ID }
+    S3Bucket:
+      Value: !Ref MediaBucket
+      Export: { Name: SafeHer-S3-Bucket }

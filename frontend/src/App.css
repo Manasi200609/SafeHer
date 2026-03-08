@@ -1,0 +1,289 @@
+/* ──────────────────────────────────────────────────────────────── */
+/* DEEP PLUM + ROSE GOLD + BLUSH + CHAMPAGNE THEME */
+/* ──────────────────────────────────────────────────────────────── */
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* AMBIENT GLOWING BLOBS */
+/* ──────────────────────────────────────────────────────────────── */
+
+@keyframes ambientBlob1 {
+  0%, 100% { 
+    transform: translate(0, 0) scale(1);
+    opacity: 0.15;
+  }
+  50% { 
+    transform: translate(30px, -40px) scale(1.1);
+    opacity: 0.25;
+  }
+}
+
+@keyframes ambientBlob2 {
+  0%, 100% { 
+    transform: translate(0, 0) scale(1);
+    opacity: 0.12;
+  }
+  50% { 
+    transform: translate(-40px, 30px) scale(1.05);
+    opacity: 0.2;
+  }
+}
+
+@keyframes ambientBlob3 {
+  0%, 100% { 
+    transform: translate(0, 0) scale(1);
+    opacity: 0.1;
+  }
+  50% { 
+    transform: translate(20px, 20px) scale(1.08);
+    opacity: 0.18;
+  }
+}
+
+.ambient-blob {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.blob-1 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle at 30% 30%, rgba(233, 155, 170, 0.4), rgba(212, 163, 115, 0.1));
+  top: 10%;
+  left: 10%;
+  animation: ambientBlob1 15s ease-in-out infinite;
+}
+
+.blob-2 {
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle at 50% 50%, rgba(245, 179, 195, 0.3), rgba(230, 197, 168, 0.1));
+  top: 60%;
+  right: 15%;
+  animation: ambientBlob2 18s ease-in-out infinite;
+}
+
+.blob-3 {
+  width: 250px;
+  height: 250px;
+  background: radial-gradient(circle at 70% 30%, rgba(230, 197, 168, 0.25), rgba(245, 179, 195, 0.05));
+  bottom: 20%;
+  left: 30%;
+  animation: ambientBlob3 20s ease-in-out infinite;
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* SHIMMER TEXT EFFECT */
+/* ──────────────────────────────────────────────────────────────── */
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #FBF3F0 0%,
+    #FFB3CA 25%,
+    #F5E6D3 50%,
+    #FFB3CA 75%,
+    #FBF3F0 100%
+  );
+  background-size: 1000px 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 8s linear infinite;
+}
+
+.shimmer-text-fast {
+  background: linear-gradient(
+    90deg,
+    #FBF3F0 0%,
+    #FFB3CA 25%,
+    #F5E6D3 50%,
+    #FFB3CA 75%,
+    #FBF3F0 100%
+  );
+  background-size: 1000px 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite;
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* GLASS CARDS WITH SOFT PINK BORDERS */
+/* ──────────────────────────────────────────────────────────────── */
+
+.glass-card {
+  background: rgba(61, 29, 74, 0.5);
+  backdrop-filter: blur(10px);
+  border: 1.5px solid rgba(240, 212, 221, 0.3);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(26, 11, 30, 0.3);
+}
+
+.glass-card:hover {
+  border-color: rgba(240, 212, 221, 0.5);
+  box-shadow: 0 12px 48px rgba(233, 155, 170, 0.15);
+  transition: all 0.3s ease;
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* ROTATING ORBIT RING AROUND SOS BUTTON */
+/* ──────────────────────────────────────────────────────────────── */
+
+@keyframes orbitRotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes orbitPulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 20px rgba(233, 155, 170, 0.4),
+      0 0 40px rgba(245, 179, 195, 0.2);
+  }
+  50% {
+    box-shadow: 
+      0 0 30px rgba(233, 155, 170, 0.6),
+      0 0 60px rgba(245, 179, 195, 0.3);
+  }
+}
+
+@keyframes dotOrbit {
+  0% { 
+    transform: rotate(0deg) translateX(55px) rotate(0deg);
+    opacity: 1;
+  }
+  100% { 
+    transform: rotate(360deg) translateX(55px) rotate(-360deg);
+    opacity: 1;
+  }
+}
+
+.sos-button-orbit {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E89BAA 0%, #D67B8F 100%);
+  box-shadow: 
+    0 0 20px rgba(233, 155, 170, 0.5),
+    0 0 40px rgba(245, 179, 195, 0.3),
+    0 8px 20px rgba(26, 11, 30, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  animation: orbitPulse 2s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+.sos-button-orbit:active {
+  transform: scale(0.95);
+}
+
+.sos-button-orbit::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(233, 155, 170, 0.4), rgba(245, 179, 195, 0.2));
+  -webkit-mask-image: conic-gradient(from 0deg, transparent 270deg, black 360deg);
+  mask-image: conic-gradient(from 0deg, transparent 270deg, black 360deg);
+  animation: orbitRotate 3s linear infinite;
+  box-shadow: inset 0 0 15px rgba(233, 155, 170, 0.3);
+}
+
+.sos-button-orbit::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #FFB3CA;
+  border-radius: 50%;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  box-shadow: 
+    0 0 8px rgba(255, 179, 202, 0.8),
+    0 0 15px rgba(233, 155, 170, 0.5);
+  animation: orbitRotate 3s linear infinite;
+}
+
+.sos-button-orbit .sos-text {
+  position: relative;
+  z-index: 1;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* ──────────────────────────────────────────────────────────────── */
+/* LEGACY STYLES */
+/* ──────────────────────────────────────────────────────────────── */
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #E89BAA);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #F5B3C3);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+  background: rgba(61, 29, 74, 0.5);
+  border: 1.5px solid rgba(240, 212, 221, 0.3);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.read-the-docs {
+  color: #D4A9AC;
+}

@@ -1,0 +1,38 @@
+{
+"expo": {
+"name": "SafeHer",
+"slug": "safeher",
+"version": "1.0.0",
+"orientation": "portrait",
+"icon": "./assets/icon.png",
+"userInterfaceStyle": "light",
+"splash": {
+"image": "./assets/splash.png",
+"resizeMode": "contain",
+"backgroundColor": "#12050E"
+},
+"assetBundlePatterns": [
+"**/*"
+],
+"ios": {
+"supportsTablet": true,
+"config": {
+"googleMapsApiKey": "AIzaSyDsK1RR3oxkzUhid0gsluuWADbIB57R7Ls"
+}
+},
+"android": {
+"adaptiveIcon": {
+"foregroundImage": "./assets/adaptive-icon.png",
+"backgroundColor": "#12050E"
+},
+"config": {
+"googleMaps": {
+"apiKey": "PASTE_YOUR_API_KEY_HERE"
+}
+}
+},
+"web": {
+"favicon": "./assets/favicon.png"
+}
+}
+}

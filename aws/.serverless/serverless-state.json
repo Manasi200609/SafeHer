@@ -1,0 +1,3780 @@
+{
+  "service": {
+    "service": "safeher",
+    "serviceObject": {
+      "name": "safeher"
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs18.x",
+      "region": "ap-south-1",
+      "stage": "prod",
+      "memorySize": 256,
+      "timeout": 15,
+      "logRetentionInDays": 30,
+      "deploymentMethod": "direct",
+      "deploymentBucket": "safeher-sls-deploy-138356843370-ap-south-1",
+      "environment": {
+        "COGNITO_USER_POOL_ID": {
+          "Ref": "SafeHerUserPool"
+        },
+        "COGNITO_CLIENT_ID": {
+          "Ref": "SafeHerUserPoolClient"
+        },
+        "AUDIO_BUCKET": "safeher-media-prod"
+      },
+      "httpApi": {
+        "cors": true
+      },
+      "iam": {
+        "role": {
+          "statements": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:*"
+              ],
+              "Resource": [
+                {
+                  "Fn::GetAtt": [
+                    "UsersTable",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::GetAtt": [
+                    "ContactsTable",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::GetAtt": [
+                    "LogsTable",
+                    "Arn"
+                  ]
+                },
+                {
+                  "Fn::Sub": "${UsersTable.Arn}/index/*"
+                }
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sns:Publish"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "cloudwatch:PutMetricData"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "cognito-idp:AdminConfirmSignUp"
+              ],
+              "Resource": {
+                "Fn::GetAtt": [
+                  "SafeHerUserPool",
+                  "Arn"
+                ]
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:PutObject",
+                "s3:GetObject"
+              ],
+              "Resource": {
+                "Fn::Sub": "${MediaBucket.Arn}/*"
+              }
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "transcribe:StartTranscriptionJob",
+                "transcribe:GetTranscriptionJob"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "bedrock:InvokeModel"
+              ],
+              "Resource": "*"
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "polly:SynthesizeSpeech"
+              ],
+              "Resource": "*"
+            }
+          ]
+        }
+      },
+      "versionFunctions": true,
+      "deploymentBucketObject": {
+        "name": "safeher-sls-deploy-138356843370-ap-south-1"
+      },
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "AuthRegisterLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-authRegister",
+              "RetentionInDays": 30
+            }
+          },
+          "AuthLoginLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-authLogin",
+              "RetentionInDays": 30
+            }
+          },
+          "AuthProfileLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-authProfile",
+              "RetentionInDays": 30
+            }
+          },
+          "AuthSettingsLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-authSettings",
+              "RetentionInDays": 30
+            }
+          },
+          "SafetyStatusLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-safetyStatus",
+              "RetentionInDays": 30
+            }
+          },
+          "SafetyScoreLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-safetyScore",
+              "RetentionInDays": 30
+            }
+          },
+          "SafetySOSLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-safetySOS",
+              "RetentionInDays": 30
+            }
+          },
+          "SafetyHistoryLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-safetyHistory",
+              "RetentionInDays": 30
+            }
+          },
+          "SafetyUploadUrlLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-safetyUploadUrl",
+              "RetentionInDays": 30
+            }
+          },
+          "SafetyCoverCallLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-safetyCoverCall",
+              "RetentionInDays": 30
+            }
+          },
+          "SafetyProcessAudioLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-safetyProcessAudio",
+              "RetentionInDays": 30
+            }
+          },
+          "SafetyAiDispatcherLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-safetyAiDispatcher",
+              "RetentionInDays": 30
+            }
+          },
+          "ContactsListLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-contactsList",
+              "RetentionInDays": 30
+            }
+          },
+          "ContactsAddLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-contactsAdd",
+              "RetentionInDays": 30
+            }
+          },
+          "ContactsUpdateLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-contactsUpdate",
+              "RetentionInDays": 30
+            }
+          },
+          "ContactsDeleteLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-contactsDelete",
+              "RetentionInDays": 30
+            }
+          },
+          "LogsListLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-logsList",
+              "RetentionInDays": 30
+            }
+          },
+          "LogsStatsLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/safeher-prod-logsStats",
+              "RetentionInDays": 30
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "safeher",
+                        "prod",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup",
+                          "logs:TagResource"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/safeher-prod*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/safeher-prod*:*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iam\"][\"role\"][\"statements\"][0]"
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iam\"][\"role\"][\"statements\"][1]"
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iam\"][\"role\"][\"statements\"][2]"
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iam\"][\"role\"][\"statements\"][3]"
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iam\"][\"role\"][\"statements\"][4]"
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iam\"][\"role\"][\"statements\"][5]"
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iam\"][\"role\"][\"statements\"][6]"
+                      },
+                      {
+                        "$ref": "$[\"service\"][\"provider\"][\"iam\"][\"role\"][\"statements\"][7]"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "safeher",
+                    "prod",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          },
+          "UtilsLambdaLayer": {
+            "Type": "AWS::Lambda::LayerVersion",
+            "Properties": {
+              "Content": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772552190630-2026-03-03T15:36:30.630Z/Utils.zip"
+              },
+              "LayerName": "safeher-utils",
+              "CompatibleRuntimes": [
+                "nodejs18.x"
+              ]
+            }
+          },
+          "AuthRegisterLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/auth/auth.register",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-authRegister",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "AuthRegisterLogGroup"
+            ]
+          },
+          "AuthLoginLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/auth/auth.login",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-authLogin",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "AuthLoginLogGroup"
+            ]
+          },
+          "AuthProfileLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/auth/auth.getProfile",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-authProfile",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "AuthProfileLogGroup"
+            ]
+          },
+          "AuthSettingsLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/auth/auth.updateSettings",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-authSettings",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "AuthSettingsLogGroup"
+            ]
+          },
+          "SafetyStatusLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/safety/safety.getScore",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-safetyStatus",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "SafetyStatusLogGroup"
+            ]
+          },
+          "SafetyScoreLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/safety/safety.updateScore",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-safetyScore",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "SafetyScoreLogGroup"
+            ]
+          },
+          "SafetySOSLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/safety/safety.triggerSOS",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-safetySOS",
+              "MemorySize": 256,
+              "Timeout": 29,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "SafetySOSLogGroup"
+            ]
+          },
+          "SafetyHistoryLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/safety/safety.getHistory",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-safetyHistory",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "SafetyHistoryLogGroup"
+            ]
+          },
+          "SafetyUploadUrlLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/safety/safety.getUploadUrl",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-safetyUploadUrl",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "SafetyUploadUrlLogGroup"
+            ]
+          },
+          "SafetyCoverCallLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/safety/safety.generateCoverCall",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-safetyCoverCall",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "SafetyCoverCallLogGroup"
+            ]
+          },
+          "SafetyProcessAudioLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/safety/safety.processAudio",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-safetyProcessAudio",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "SafetyProcessAudioLogGroup"
+            ]
+          },
+          "SafetyAiDispatcherLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/safety/safety.handleTranscript",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-safetyAiDispatcher",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "SafetyAiDispatcherLogGroup"
+            ]
+          },
+          "ContactsListLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/contacts/contacts.list",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-contactsList",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "ContactsListLogGroup"
+            ]
+          },
+          "ContactsAddLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/contacts/contacts.add",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-contactsAdd",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "ContactsAddLogGroup"
+            ]
+          },
+          "ContactsUpdateLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/contacts/contacts.update",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-contactsUpdate",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "ContactsUpdateLogGroup"
+            ]
+          },
+          "ContactsDeleteLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/contacts/contacts.remove",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-contactsDelete",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "ContactsDeleteLogGroup"
+            ]
+          },
+          "LogsListLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/logs/logs.list",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-logsList",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "LogsListLogGroup"
+            ]
+          },
+          "LogsStatsLambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/safeher.zip"
+              },
+              "Handler": "lambdas/logs/logs.stats",
+              "Runtime": "nodejs18.x",
+              "FunctionName": "safeher-prod-logsStats",
+              "MemorySize": 256,
+              "Timeout": 15,
+              "Environment": {
+                "Variables": {
+                  "COGNITO_USER_POOL_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_USER_POOL_ID\"]"
+                  },
+                  "COGNITO_CLIENT_ID": {
+                    "$ref": "$[\"service\"][\"provider\"][\"environment\"][\"COGNITO_CLIENT_ID\"]"
+                  },
+                  "AUDIO_BUCKET": "safeher-media-prod"
+                }
+              },
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleLambdaExecution",
+                  "Arn"
+                ]
+              },
+              "Layers": [
+                {
+                  "Ref": "UtilsLambdaLayer"
+                }
+              ]
+            },
+            "DependsOn": [
+              "LogsStatsLogGroup"
+            ]
+          },
+          "AuthRegisterLambdaVersionHMcwkRYIvmKYaVEEZ0AMBT5gQJfA7TqgwWp6U7UKjk": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "AuthRegisterLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "AuthLoginLambdaVersiondvC8Ekci7aQP4eE07PAH9aBduc2tuj3plSNZ6MkS1Y": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "AuthLoginLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "AuthProfileLambdaVersion5S7Xbt1aFiSikZVvRPDKoG5CRFtB41r7kxQwkbzezo": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "AuthProfileLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "AuthSettingsLambdaVersionyVYDfsnS10r3P696ToIcfw5rIDvEDUjEMf7INIV4m6o": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "AuthSettingsLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "SafetyStatusLambdaVersiona0Rim9tgVxdGfudLGG9sGGI614KaAFapF8RbbXes": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SafetyStatusLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "SafetyScoreLambdaVersionViQXvV3LnNVYJxNizQp2iVbey0fkUragKAbUhayl0I": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SafetyScoreLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "SafetySOSLambdaVersionKe5BlS1rjeSa1AwtVjiQPo40iQEwBV1SoPj2rvy6Bw": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SafetySOSLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "SafetyHistoryLambdaVersionHNtlOKy6iCOibDXVDYkegoTW8PkbwMBFcuLOfDR8": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SafetyHistoryLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "SafetyUploadUrlLambdaVersionIlPB8yGCt3fuDQLi9jbOGUqYiRN4Dxket2sH5sH0G3Y": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SafetyUploadUrlLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "SafetyCoverCallLambdaVersionwg7xPW0P8rt2EFcCINvAEZEbN0rUvbS6WPieGdJHDmA": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SafetyCoverCallLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "SafetyProcessAudioLambdaVersioneAqkD2PwV1QjGOP5XcQm7LFX628O2V0rw2aee8mBac": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SafetyProcessAudioLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "SafetyAiDispatcherLambdaVersionvmZtEmUI7NWhQqELqRlD27mJjtQorCJE2WW9Z5Xh9SE": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "SafetyAiDispatcherLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "ContactsListLambdaVersionieAX7gRCVCLMthuxTQK91PRiNdyAoZflzwUsqkfHck": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ContactsListLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "ContactsAddLambdaVersionSGjPMOLribryJ7PSNM1NXe1ojKU4KzlF2ENRRXPy0w": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ContactsAddLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "ContactsUpdateLambdaVersionZm2XErSq2fBm6Ys8THzR7YKXPOVZYE7qOvQwoFaR8A": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ContactsUpdateLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "ContactsDeleteLambdaVersionL8KNMGOY4Rb7sLy0QBoRhFByPYxspUfrL2MEB0N6k": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "ContactsDeleteLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "LogsListLambdaVersionGuIyNUmzrV6m2cCmeJn2QgmhffuIlEU1Td3KgVlUjeg": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "LogsListLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "LogsStatsLambdaVersionDKs0QuMyb5SYaqSXb0BNSiXQeQRlqqtucwZpTbTKZ8": {
+            "Type": "AWS::Lambda::Version",
+            "DeletionPolicy": "Retain",
+            "Properties": {
+              "FunctionName": {
+                "Ref": "LogsStatsLambdaFunction"
+              },
+              "CodeSha256": "+s3DwUbmnz5Gs74WC67Ca2eV3B5oKEBOVX3pVnorYBc="
+            }
+          },
+          "SafetyProcessAudioCustomS31": {
+            "Type": "Custom::S3",
+            "Version": 1,
+            "DependsOn": [
+              "SafetyProcessAudioLambdaFunction",
+              "CustomDashresourceDashexistingDashs3LambdaFunction"
+            ],
+            "Properties": {
+              "ServiceToken": {
+                "Fn::GetAtt": [
+                  "CustomDashresourceDashexistingDashs3LambdaFunction",
+                  "Arn"
+                ]
+              },
+              "FunctionName": "safeher-prod-safetyProcessAudio",
+              "BucketName": "safeher-media-prod",
+              "BucketConfigs": [
+                {
+                  "Event": "s3:ObjectCreated:*",
+                  "Rules": []
+                }
+              ]
+            }
+          },
+          "IamRoleCustomResourcesLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "prod",
+                        "safeher",
+                        "custom-resources-lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Resource": {
+                          "Fn::Join": [
+                            ":",
+                            [
+                              "arn",
+                              {
+                                "Ref": "AWS::Partition"
+                              },
+                              "s3",
+                              "",
+                              "",
+                              "safeher-media-prod"
+                            ]
+                          ]
+                        },
+                        "Action": [
+                          "s3:PutBucketNotification",
+                          "s3:GetBucketNotification"
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Resource": {
+                          "Fn::Join": [
+                            ":",
+                            [
+                              "arn",
+                              {
+                                "Ref": "AWS::Partition"
+                              },
+                              "lambda",
+                              {
+                                "Ref": "AWS::Region"
+                              },
+                              {
+                                "Ref": "AWS::AccountId"
+                              },
+                              "function",
+                              "*"
+                            ]
+                          ]
+                        },
+                        "Action": [
+                          "lambda:AddPermission",
+                          "lambda:RemovePermission"
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          "CustomDashresourceDashexistingDashs3LambdaFunction": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+              "Code": {
+                "S3Bucket": "safeher-sls-deploy-138356843370-ap-south-1",
+                "S3Key": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z/custom-resources.zip"
+              },
+              "FunctionName": "safeher-prod-custom-resource-existing-s3",
+              "Handler": "s3/handler.handler",
+              "MemorySize": 1024,
+              "Runtime": "nodejs18.x",
+              "Timeout": 180,
+              "Role": {
+                "Fn::GetAtt": [
+                  "IamRoleCustomResourcesLambdaExecution",
+                  "Arn"
+                ]
+              }
+            },
+            "DependsOn": [
+              "IamRoleCustomResourcesLambdaExecution"
+            ]
+          },
+          "SafeherprodsafetyAiDispatcherrule1EventBridgeRule": {
+            "Type": "AWS::Events::Rule",
+            "Properties": {
+              "EventPattern": {
+                "source": [
+                  "aws.transcribe"
+                ],
+                "detail-type": [
+                  "Transcribe Job State Change"
+                ],
+                "detail": {
+                  "TranscriptionJobStatus": [
+                    "COMPLETED"
+                  ]
+                }
+              },
+              "Name": "safeher-prod-safetyAiDispatcher-rule-1",
+              "State": "ENABLED",
+              "Targets": [
+                {
+                  "Arn": {
+                    "Fn::GetAtt": [
+                      "SafetyAiDispatcherLambdaFunction",
+                      "Arn"
+                    ]
+                  },
+                  "Id": "safeher-prod-safetyAiDispatcher-rule-1-target"
+                }
+              ]
+            }
+          },
+          "SafetyAiDispatcherEventBridgeLambdaPermission1": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "Action": "lambda:InvokeFunction",
+              "FunctionName": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafeherprodsafetyAiDispatcherrule1EventBridgeRule\"][\"Properties\"][\"Targets\"][0][\"Arn\"]"
+              },
+              "Principal": "events.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  ":",
+                  [
+                    "arn",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    "events",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    {
+                      "Fn::Join": [
+                        "/",
+                        [
+                          "rule",
+                          "safeher-prod-safetyAiDispatcher-rule-1"
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApi": {
+            "Type": "AWS::ApiGatewayV2::Api",
+            "Properties": {
+              "Name": "prod-safeher",
+              "ProtocolType": "HTTP",
+              "CorsConfiguration": {
+                "AllowHeaders": [
+                  "Content-Type",
+                  "X-Amz-Date",
+                  "Authorization",
+                  "X-Api-Key",
+                  "X-Amz-Security-Token",
+                  "X-Amz-User-Agent",
+                  "X-Amzn-Trace-Id"
+                ],
+                "AllowMethods": [
+                  "OPTIONS",
+                  "POST",
+                  "GET",
+                  "PUT",
+                  "DELETE"
+                ],
+                "AllowOrigins": [
+                  "*"
+                ]
+              }
+            }
+          },
+          "HttpApiStage": {
+            "Type": "AWS::ApiGatewayV2::Stage",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "StageName": "$default",
+              "AutoDeploy": true,
+              "DefaultRouteSettings": {
+                "DetailedMetricsEnabled": false
+              }
+            }
+          },
+          "AuthRegisterLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "AuthRegisterLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationAuthRegister": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"AuthRegisterLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostAuthRegister": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /auth/register",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationAuthRegister"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationAuthRegister"
+          },
+          "AuthLoginLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "AuthLoginLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationAuthLogin": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"AuthLoginLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostAuthLogin": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /auth/login",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationAuthLogin"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationAuthLogin"
+          },
+          "AuthProfileLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "AuthProfileLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationAuthProfile": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"AuthProfileLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetAuthProfile": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /auth/profile",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationAuthProfile"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationAuthProfile"
+          },
+          "AuthSettingsLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "AuthSettingsLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationAuthSettings": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"AuthSettingsLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePutAuthSettings": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "PUT /auth/settings",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationAuthSettings"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationAuthSettings"
+          },
+          "SafetyStatusLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "SafetyStatusLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationSafetyStatus": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafetyStatusLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetSafetyStatus": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /safety/status",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationSafetyStatus"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationSafetyStatus"
+          },
+          "SafetyScoreLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "SafetyScoreLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationSafetyScore": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafetyScoreLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostSafetyScore": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /safety/score",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationSafetyScore"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationSafetyScore"
+          },
+          "SafetySOSLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "SafetySOSLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationSafetySOS": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafetySOSLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostSafetySos": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /safety/sos",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationSafetySOS"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationSafetySOS"
+          },
+          "SafetyHistoryLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "SafetyHistoryLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationSafetyHistory": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafetyHistoryLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetSafetyHistory": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /safety/history",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationSafetyHistory"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationSafetyHistory"
+          },
+          "SafetyUploadUrlLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "SafetyUploadUrlLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationSafetyUploadUrl": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafetyUploadUrlLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetSafetyUploadDashurl": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /safety/upload-url",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationSafetyUploadUrl"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationSafetyUploadUrl"
+          },
+          "SafetyCoverCallLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "SafetyCoverCallLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationSafetyCoverCall": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafetyCoverCallLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostSafetyCoverDashcall": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /safety/cover-call",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationSafetyCoverCall"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationSafetyCoverCall"
+          },
+          "ContactsListLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "ContactsListLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationContactsList": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"ContactsListLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetContacts": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /contacts",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationContactsList"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationContactsList"
+          },
+          "ContactsAddLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "ContactsAddLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationContactsAdd": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"ContactsAddLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePostContacts": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "POST /contacts",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationContactsAdd"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationContactsAdd"
+          },
+          "ContactsUpdateLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "ContactsUpdateLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationContactsUpdate": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"ContactsUpdateLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRoutePutContactsIdVar": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "PUT /contacts/{id}",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationContactsUpdate"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationContactsUpdate"
+          },
+          "ContactsDeleteLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "ContactsDeleteLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationContactsDelete": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"ContactsDeleteLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteDeleteContactsIdVar": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "DELETE /contacts/{id}",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationContactsDelete"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationContactsDelete"
+          },
+          "LogsListLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "LogsListLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationLogsList": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"LogsListLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetLogs": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /logs",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationLogsList"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationLogsList"
+          },
+          "LogsStatsLambdaPermissionHttpApi": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+              "FunctionName": {
+                "Fn::GetAtt": [
+                  "LogsStatsLambdaFunction",
+                  "Arn"
+                ]
+              },
+              "Action": "lambda:InvokeFunction",
+              "Principal": "apigateway.amazonaws.com",
+              "SourceArn": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition"
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId"
+                    },
+                    ":",
+                    {
+                      "Ref": "HttpApi"
+                    },
+                    "/*"
+                  ]
+                ]
+              }
+            }
+          },
+          "HttpApiIntegrationLogsStats": {
+            "Type": "AWS::ApiGatewayV2::Integration",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "IntegrationType": "AWS_PROXY",
+              "IntegrationUri": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"LogsStatsLambdaPermissionHttpApi\"][\"Properties\"][\"FunctionName\"]"
+              },
+              "PayloadFormatVersion": "2.0",
+              "TimeoutInMillis": 30000
+            }
+          },
+          "HttpApiRouteGetLogsStats": {
+            "Type": "AWS::ApiGatewayV2::Route",
+            "Properties": {
+              "ApiId": {
+                "Ref": "HttpApi"
+              },
+              "RouteKey": "GET /logs/stats",
+              "Target": {
+                "Fn::Join": [
+                  "/",
+                  [
+                    "integrations",
+                    {
+                      "Ref": "HttpApiIntegrationLogsStats"
+                    }
+                  ]
+                ]
+              }
+            },
+            "DependsOn": "HttpApiIntegrationLogsStats"
+          },
+          "SafeHerUserPool": {
+            "Type": "AWS::Cognito::UserPool",
+            "Properties": {
+              "UserPoolName": "safeher-prod",
+              "AutoVerifiedAttributes": [
+                "email"
+              ],
+              "UsernameAttributes": [
+                "email"
+              ],
+              "Policies": {
+                "PasswordPolicy": {
+                  "MinimumLength": 8,
+                  "RequireNumbers": true,
+                  "RequireUppercase": false,
+                  "RequireSymbols": false
+                }
+              },
+              "Schema": [
+                {
+                  "Name": "name",
+                  "AttributeDataType": "String",
+                  "Required": true,
+                  "Mutable": true
+                }
+              ]
+            }
+          },
+          "SafeHerUserPoolClient": {
+            "Type": "AWS::Cognito::UserPoolClient",
+            "Properties": {
+              "ClientName": "safeher-app",
+              "UserPoolId": {
+                "Ref": "SafeHerUserPool"
+              },
+              "ExplicitAuthFlows": [
+                "ALLOW_USER_PASSWORD_AUTH",
+                "ALLOW_REFRESH_TOKEN_AUTH"
+              ],
+              "GenerateSecret": false
+            }
+          },
+          "UsersTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "SafeHer-Users",
+              "BillingMode": "PAY_PER_REQUEST",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "userId",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "email",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "userId",
+                  "KeyType": "HASH"
+                }
+              ],
+              "GlobalSecondaryIndexes": [
+                {
+                  "IndexName": "email-index",
+                  "KeySchema": [
+                    {
+                      "AttributeName": "email",
+                      "KeyType": "HASH"
+                    }
+                  ],
+                  "Projection": {
+                    "ProjectionType": "ALL"
+                  }
+                }
+              ]
+            }
+          },
+          "ContactsTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "SafeHer-Contacts",
+              "BillingMode": "PAY_PER_REQUEST",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "userId",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "contactId",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "userId",
+                  "KeyType": "HASH"
+                },
+                {
+                  "AttributeName": "contactId",
+                  "KeyType": "RANGE"
+                }
+              ]
+            }
+          },
+          "LogsTable": {
+            "Type": "AWS::DynamoDB::Table",
+            "Properties": {
+              "TableName": "SafeHer-SafetyLogs",
+              "BillingMode": "PAY_PER_REQUEST",
+              "AttributeDefinitions": [
+                {
+                  "AttributeName": "userId",
+                  "AttributeType": "S"
+                },
+                {
+                  "AttributeName": "timestamp",
+                  "AttributeType": "S"
+                }
+              ],
+              "KeySchema": [
+                {
+                  "AttributeName": "userId",
+                  "KeyType": "HASH"
+                },
+                {
+                  "AttributeName": "timestamp",
+                  "KeyType": "RANGE"
+                }
+              ],
+              "TimeToLiveSpecification": {
+                "AttributeName": "expiresAt",
+                "Enabled": true
+              }
+            }
+          },
+          "MediaBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketName": "safeher-media-prod",
+              "PublicAccessBlockConfiguration": {
+                "BlockPublicAcls": true,
+                "BlockPublicPolicy": true,
+                "IgnorePublicAcls": true,
+                "RestrictPublicBuckets": true
+              },
+              "OwnershipControls": {
+                "Rules": [
+                  {
+                    "ObjectOwnership": "BucketOwnerEnforced"
+                  }
+                ]
+              },
+              "BucketEncryption": {
+                "ServerSideEncryptionConfiguration": [
+                  {
+                    "ServerSideEncryptionByDefault": {
+                      "SSEAlgorithm": "AES256"
+                    }
+                  }
+                ]
+              },
+              "LifecycleConfiguration": {
+                "Rules": [
+                  {
+                    "Id": "expire-temp-uploads",
+                    "Status": "Enabled",
+                    "ExpirationInDays": 30,
+                    "Prefix": "temp/"
+                  }
+                ]
+              }
+            }
+          },
+          "SOSAlarm": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+              "AlarmName": "SafeHer-SOS-Triggered",
+              "MetricName": "SOSTriggers",
+              "Namespace": "SafeHer",
+              "Statistic": "Sum",
+              "Period": 60,
+              "EvaluationPeriods": 1,
+              "Threshold": 1,
+              "ComparisonOperator": "GreaterThanOrEqualToThreshold"
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "safeher-sls-deploy-138356843370-ap-south-1",
+            "Export": {
+              "Name": "sls-safeher-prod-ServerlessDeploymentBucketName"
+            }
+          },
+          "UtilsLambdaLayerQualifiedArn": {
+            "Description": "Current Lambda layer version",
+            "Value": {
+              "Ref": "UtilsLambdaLayer"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-UtilsLambdaLayerQualifiedArn"
+            }
+          },
+          "UtilsLambdaLayerHash": {
+            "Description": "Current Lambda layer hash",
+            "Value": "787babf10229b7068ae4b822725388f8be3533a7",
+            "Export": {
+              "Name": "sls-safeher-prod-UtilsLambdaLayerHash"
+            }
+          },
+          "UtilsLambdaLayerS3Key": {
+            "Description": "Current Lambda layer S3Key",
+            "Value": "serverless/safeher/prod/1772552190630-2026-03-03T15:36:30.630Z/Utils.zip",
+            "Export": {
+              "Name": "sls-safeher-prod-UtilsLambdaLayerS3Key"
+            }
+          },
+          "AuthRegisterLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "AuthRegisterLambdaVersionHMcwkRYIvmKYaVEEZ0AMBT5gQJfA7TqgwWp6U7UKjk"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-AuthRegisterLambdaFunctionQualifiedArn"
+            }
+          },
+          "AuthLoginLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "AuthLoginLambdaVersiondvC8Ekci7aQP4eE07PAH9aBduc2tuj3plSNZ6MkS1Y"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-AuthLoginLambdaFunctionQualifiedArn"
+            }
+          },
+          "AuthProfileLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "AuthProfileLambdaVersion5S7Xbt1aFiSikZVvRPDKoG5CRFtB41r7kxQwkbzezo"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-AuthProfileLambdaFunctionQualifiedArn"
+            }
+          },
+          "AuthSettingsLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "AuthSettingsLambdaVersionyVYDfsnS10r3P696ToIcfw5rIDvEDUjEMf7INIV4m6o"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-AuthSettingsLambdaFunctionQualifiedArn"
+            }
+          },
+          "SafetyStatusLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SafetyStatusLambdaVersiona0Rim9tgVxdGfudLGG9sGGI614KaAFapF8RbbXes"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-SafetyStatusLambdaFunctionQualifiedArn"
+            }
+          },
+          "SafetyScoreLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SafetyScoreLambdaVersionViQXvV3LnNVYJxNizQp2iVbey0fkUragKAbUhayl0I"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-SafetyScoreLambdaFunctionQualifiedArn"
+            }
+          },
+          "SafetySOSLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SafetySOSLambdaVersionKe5BlS1rjeSa1AwtVjiQPo40iQEwBV1SoPj2rvy6Bw"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-SafetySOSLambdaFunctionQualifiedArn"
+            }
+          },
+          "SafetyHistoryLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SafetyHistoryLambdaVersionHNtlOKy6iCOibDXVDYkegoTW8PkbwMBFcuLOfDR8"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-SafetyHistoryLambdaFunctionQualifiedArn"
+            }
+          },
+          "SafetyUploadUrlLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SafetyUploadUrlLambdaVersionIlPB8yGCt3fuDQLi9jbOGUqYiRN4Dxket2sH5sH0G3Y"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-SafetyUploadUrlLambdaFunctionQualifiedArn"
+            }
+          },
+          "SafetyCoverCallLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SafetyCoverCallLambdaVersionwg7xPW0P8rt2EFcCINvAEZEbN0rUvbS6WPieGdJHDmA"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-SafetyCoverCallLambdaFunctionQualifiedArn"
+            }
+          },
+          "SafetyProcessAudioLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SafetyProcessAudioLambdaVersioneAqkD2PwV1QjGOP5XcQm7LFX628O2V0rw2aee8mBac"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-SafetyProcessAudioLambdaFunctionQualifiedArn"
+            }
+          },
+          "SafetyAiDispatcherLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "SafetyAiDispatcherLambdaVersionvmZtEmUI7NWhQqELqRlD27mJjtQorCJE2WW9Z5Xh9SE"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-SafetyAiDispatcherLambdaFunctionQualifiedArn"
+            }
+          },
+          "ContactsListLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ContactsListLambdaVersionieAX7gRCVCLMthuxTQK91PRiNdyAoZflzwUsqkfHck"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-ContactsListLambdaFunctionQualifiedArn"
+            }
+          },
+          "ContactsAddLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ContactsAddLambdaVersionSGjPMOLribryJ7PSNM1NXe1ojKU4KzlF2ENRRXPy0w"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-ContactsAddLambdaFunctionQualifiedArn"
+            }
+          },
+          "ContactsUpdateLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ContactsUpdateLambdaVersionZm2XErSq2fBm6Ys8THzR7YKXPOVZYE7qOvQwoFaR8A"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-ContactsUpdateLambdaFunctionQualifiedArn"
+            }
+          },
+          "ContactsDeleteLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "ContactsDeleteLambdaVersionL8KNMGOY4Rb7sLy0QBoRhFByPYxspUfrL2MEB0N6k"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-ContactsDeleteLambdaFunctionQualifiedArn"
+            }
+          },
+          "LogsListLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "LogsListLambdaVersionGuIyNUmzrV6m2cCmeJn2QgmhffuIlEU1Td3KgVlUjeg"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-LogsListLambdaFunctionQualifiedArn"
+            }
+          },
+          "LogsStatsLambdaFunctionQualifiedArn": {
+            "Description": "Current Lambda function version",
+            "Value": {
+              "Ref": "LogsStatsLambdaVersionDKs0QuMyb5SYaqSXb0BNSiXQeQRlqqtucwZpTbTKZ8"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-LogsStatsLambdaFunctionQualifiedArn"
+            }
+          },
+          "HttpApiId": {
+            "Description": "Id of the HTTP API",
+            "Value": {
+              "Ref": "HttpApi"
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-HttpApiId"
+            }
+          },
+          "HttpApiUrl": {
+            "Description": "URL of the HTTP API",
+            "Value": {
+              "Fn::Join": [
+                "",
+                [
+                  "https://",
+                  {
+                    "Ref": "HttpApi"
+                  },
+                  ".execute-api.",
+                  {
+                    "Ref": "AWS::Region"
+                  },
+                  ".",
+                  {
+                    "Ref": "AWS::URLSuffix"
+                  }
+                ]
+              ]
+            },
+            "Export": {
+              "Name": "sls-safeher-prod-HttpApiUrl"
+            }
+          },
+          "ApiUrl": {
+            "Value": {
+              "Fn::Sub": "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+            },
+            "Export": {
+              "Name": "SafeHer-API-URL"
+            }
+          },
+          "UserPoolId": {
+            "Value": {
+              "Ref": "SafeHerUserPool"
+            },
+            "Export": {
+              "Name": "SafeHer-UserPool-ID"
+            }
+          },
+          "ClientId": {
+            "Value": {
+              "Ref": "SafeHerUserPoolClient"
+            },
+            "Export": {
+              "Name": "SafeHer-Client-ID"
+            }
+          },
+          "S3Bucket": {
+            "Value": {
+              "Ref": "MediaBucket"
+            },
+            "Export": {
+              "Name": "SafeHer-S3-Bucket"
+            }
+          }
+        }
+      },
+      "vpc": {}
+    },
+    "pluginsData": {},
+    "functions": {
+      "authRegister": {
+        "handler": "lambdas/auth/auth.register",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"AuthRegisterLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "POST",
+              "path": "/auth/register"
+            },
+            "resolvedMethod": "POST",
+            "resolvedPath": "/auth/register"
+          }
+        ],
+        "name": "safeher-prod-authRegister",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "AuthRegisterLambdaVersionHMcwkRYIvmKYaVEEZ0AMBT5gQJfA7TqgwWp6U7UKjk"
+      },
+      "authLogin": {
+        "handler": "lambdas/auth/auth.login",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"AuthLoginLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "POST",
+              "path": "/auth/login"
+            },
+            "resolvedMethod": "POST",
+            "resolvedPath": "/auth/login"
+          }
+        ],
+        "name": "safeher-prod-authLogin",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "AuthLoginLambdaVersiondvC8Ekci7aQP4eE07PAH9aBduc2tuj3plSNZ6MkS1Y"
+      },
+      "authProfile": {
+        "handler": "lambdas/auth/auth.getProfile",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"AuthProfileLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "GET",
+              "path": "/auth/profile"
+            },
+            "resolvedMethod": "GET",
+            "resolvedPath": "/auth/profile"
+          }
+        ],
+        "name": "safeher-prod-authProfile",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "AuthProfileLambdaVersion5S7Xbt1aFiSikZVvRPDKoG5CRFtB41r7kxQwkbzezo"
+      },
+      "authSettings": {
+        "handler": "lambdas/auth/auth.updateSettings",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"AuthSettingsLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "PUT",
+              "path": "/auth/settings"
+            },
+            "resolvedMethod": "PUT",
+            "resolvedPath": "/auth/settings"
+          }
+        ],
+        "name": "safeher-prod-authSettings",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "AuthSettingsLambdaVersionyVYDfsnS10r3P696ToIcfw5rIDvEDUjEMf7INIV4m6o"
+      },
+      "safetyStatus": {
+        "handler": "lambdas/safety/safety.getScore",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafetyStatusLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "GET",
+              "path": "/safety/status"
+            },
+            "resolvedMethod": "GET",
+            "resolvedPath": "/safety/status"
+          }
+        ],
+        "name": "safeher-prod-safetyStatus",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "SafetyStatusLambdaVersiona0Rim9tgVxdGfudLGG9sGGI614KaAFapF8RbbXes"
+      },
+      "safetyScore": {
+        "handler": "lambdas/safety/safety.updateScore",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafetyScoreLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "POST",
+              "path": "/safety/score"
+            },
+            "resolvedMethod": "POST",
+            "resolvedPath": "/safety/score"
+          }
+        ],
+        "name": "safeher-prod-safetyScore",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "SafetyScoreLambdaVersionViQXvV3LnNVYJxNizQp2iVbey0fkUragKAbUhayl0I"
+      },
+      "safetySOS": {
+        "handler": "lambdas/safety/safety.triggerSOS",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafetySOSLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "timeout": 29,
+        "events": [
+          {
+            "httpApi": {
+              "method": "POST",
+              "path": "/safety/sos"
+            },
+            "resolvedMethod": "POST",
+            "resolvedPath": "/safety/sos"
+          }
+        ],
+        "name": "safeher-prod-safetySOS",
+        "package": {},
+        "memory": 256,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "SafetySOSLambdaVersionKe5BlS1rjeSa1AwtVjiQPo40iQEwBV1SoPj2rvy6Bw"
+      },
+      "safetyHistory": {
+        "handler": "lambdas/safety/safety.getHistory",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafetyHistoryLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "GET",
+              "path": "/safety/history"
+            },
+            "resolvedMethod": "GET",
+            "resolvedPath": "/safety/history"
+          }
+        ],
+        "name": "safeher-prod-safetyHistory",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "SafetyHistoryLambdaVersionHNtlOKy6iCOibDXVDYkegoTW8PkbwMBFcuLOfDR8"
+      },
+      "safetyUploadUrl": {
+        "handler": "lambdas/safety/safety.getUploadUrl",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafetyUploadUrlLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "GET",
+              "path": "/safety/upload-url"
+            },
+            "resolvedMethod": "GET",
+            "resolvedPath": "/safety/upload-url"
+          }
+        ],
+        "name": "safeher-prod-safetyUploadUrl",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "SafetyUploadUrlLambdaVersionIlPB8yGCt3fuDQLi9jbOGUqYiRN4Dxket2sH5sH0G3Y"
+      },
+      "safetyCoverCall": {
+        "handler": "lambdas/safety/safety.generateCoverCall",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafetyCoverCallLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "POST",
+              "path": "/safety/cover-call"
+            },
+            "resolvedMethod": "POST",
+            "resolvedPath": "/safety/cover-call"
+          }
+        ],
+        "name": "safeher-prod-safetyCoverCall",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "SafetyCoverCallLambdaVersionwg7xPW0P8rt2EFcCINvAEZEbN0rUvbS6WPieGdJHDmA"
+      },
+      "safetyProcessAudio": {
+        "handler": "lambdas/safety/safety.processAudio",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafetyProcessAudioLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "s3": {
+              "bucket": "safeher-media-prod",
+              "event": "s3:ObjectCreated:*",
+              "existing": true
+            }
+          }
+        ],
+        "name": "safeher-prod-safetyProcessAudio",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "SafetyProcessAudioLambdaVersioneAqkD2PwV1QjGOP5XcQm7LFX628O2V0rw2aee8mBac"
+      },
+      "safetyAiDispatcher": {
+        "handler": "lambdas/safety/safety.handleTranscript",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafetyAiDispatcherLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "eventBridge": {
+              "pattern": {
+                "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"SafeherprodsafetyAiDispatcherrule1EventBridgeRule\"][\"Properties\"][\"EventPattern\"]"
+              }
+            }
+          }
+        ],
+        "name": "safeher-prod-safetyAiDispatcher",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "SafetyAiDispatcherLambdaVersionvmZtEmUI7NWhQqELqRlD27mJjtQorCJE2WW9Z5Xh9SE"
+      },
+      "contactsList": {
+        "handler": "lambdas/contacts/contacts.list",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"ContactsListLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "GET",
+              "path": "/contacts"
+            },
+            "resolvedMethod": "GET",
+            "resolvedPath": "/contacts"
+          }
+        ],
+        "name": "safeher-prod-contactsList",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "ContactsListLambdaVersionieAX7gRCVCLMthuxTQK91PRiNdyAoZflzwUsqkfHck"
+      },
+      "contactsAdd": {
+        "handler": "lambdas/contacts/contacts.add",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"ContactsAddLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "POST",
+              "path": "/contacts"
+            },
+            "resolvedMethod": "POST",
+            "resolvedPath": "/contacts"
+          }
+        ],
+        "name": "safeher-prod-contactsAdd",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "ContactsAddLambdaVersionSGjPMOLribryJ7PSNM1NXe1ojKU4KzlF2ENRRXPy0w"
+      },
+      "contactsUpdate": {
+        "handler": "lambdas/contacts/contacts.update",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"ContactsUpdateLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "PUT",
+              "path": "/contacts/{id}"
+            },
+            "resolvedMethod": "PUT",
+            "resolvedPath": "/contacts/{id}"
+          }
+        ],
+        "name": "safeher-prod-contactsUpdate",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "ContactsUpdateLambdaVersionZm2XErSq2fBm6Ys8THzR7YKXPOVZYE7qOvQwoFaR8A"
+      },
+      "contactsDelete": {
+        "handler": "lambdas/contacts/contacts.remove",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"ContactsDeleteLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "DELETE",
+              "path": "/contacts/{id}"
+            },
+            "resolvedMethod": "DELETE",
+            "resolvedPath": "/contacts/{id}"
+          }
+        ],
+        "name": "safeher-prod-contactsDelete",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "ContactsDeleteLambdaVersionL8KNMGOY4Rb7sLy0QBoRhFByPYxspUfrL2MEB0N6k"
+      },
+      "logsList": {
+        "handler": "lambdas/logs/logs.list",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"LogsListLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "GET",
+              "path": "/logs"
+            },
+            "resolvedMethod": "GET",
+            "resolvedPath": "/logs"
+          }
+        ],
+        "name": "safeher-prod-logsList",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "LogsListLambdaVersionGuIyNUmzrV6m2cCmeJn2QgmhffuIlEU1Td3KgVlUjeg"
+      },
+      "logsStats": {
+        "handler": "lambdas/logs/logs.stats",
+        "layers": {
+          "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"LogsStatsLambdaFunction\"][\"Properties\"][\"Layers\"]"
+        },
+        "events": [
+          {
+            "httpApi": {
+              "method": "GET",
+              "path": "/logs/stats"
+            },
+            "resolvedMethod": "GET",
+            "resolvedPath": "/logs/stats"
+          }
+        ],
+        "name": "safeher-prod-logsStats",
+        "package": {},
+        "memory": 256,
+        "timeout": 15,
+        "runtime": "nodejs18.x",
+        "vpc": {},
+        "versionLogicalId": "LogsStatsLambdaVersionDKs0QuMyb5SYaqSXb0BNSiXQeQRlqqtucwZpTbTKZ8"
+      }
+    },
+    "resources": {
+      "Resources": {
+        "SafeHerUserPool": {
+          "Type": "AWS::Cognito::UserPool",
+          "Properties": {
+            "UserPoolName": "safeher-prod",
+            "AutoVerifiedAttributes": [
+              "email"
+            ],
+            "UsernameAttributes": [
+              "email"
+            ],
+            "Policies": {
+              "PasswordPolicy": {
+                "MinimumLength": 8,
+                "RequireNumbers": true,
+                "RequireUppercase": false,
+                "RequireSymbols": false
+              }
+            },
+            "Schema": [
+              {
+                "Name": "name",
+                "AttributeDataType": "String",
+                "Required": true,
+                "Mutable": true
+              }
+            ]
+          }
+        },
+        "SafeHerUserPoolClient": {
+          "Type": "AWS::Cognito::UserPoolClient",
+          "Properties": {
+            "ClientName": "safeher-app",
+            "UserPoolId": {
+              "Ref": "SafeHerUserPool"
+            },
+            "ExplicitAuthFlows": [
+              "ALLOW_USER_PASSWORD_AUTH",
+              "ALLOW_REFRESH_TOKEN_AUTH"
+            ],
+            "GenerateSecret": false
+          }
+        },
+        "UsersTable": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "TableName": "SafeHer-Users",
+            "BillingMode": "PAY_PER_REQUEST",
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "userId",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "email",
+                "AttributeType": "S"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "userId",
+                "KeyType": "HASH"
+              }
+            ],
+            "GlobalSecondaryIndexes": [
+              {
+                "IndexName": "email-index",
+                "KeySchema": [
+                  {
+                    "AttributeName": "email",
+                    "KeyType": "HASH"
+                  }
+                ],
+                "Projection": {
+                  "ProjectionType": "ALL"
+                }
+              }
+            ]
+          }
+        },
+        "ContactsTable": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "TableName": "SafeHer-Contacts",
+            "BillingMode": "PAY_PER_REQUEST",
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "userId",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "contactId",
+                "AttributeType": "S"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "userId",
+                "KeyType": "HASH"
+              },
+              {
+                "AttributeName": "contactId",
+                "KeyType": "RANGE"
+              }
+            ]
+          }
+        },
+        "LogsTable": {
+          "Type": "AWS::DynamoDB::Table",
+          "Properties": {
+            "TableName": "SafeHer-SafetyLogs",
+            "BillingMode": "PAY_PER_REQUEST",
+            "AttributeDefinitions": [
+              {
+                "AttributeName": "userId",
+                "AttributeType": "S"
+              },
+              {
+                "AttributeName": "timestamp",
+                "AttributeType": "S"
+              }
+            ],
+            "KeySchema": [
+              {
+                "AttributeName": "userId",
+                "KeyType": "HASH"
+              },
+              {
+                "AttributeName": "timestamp",
+                "KeyType": "RANGE"
+              }
+            ],
+            "TimeToLiveSpecification": {
+              "AttributeName": "expiresAt",
+              "Enabled": true
+            }
+          }
+        },
+        "MediaBucket": {
+          "Type": "AWS::S3::Bucket",
+          "Properties": {
+            "BucketName": "safeher-media-prod",
+            "PublicAccessBlockConfiguration": {
+              "BlockPublicAcls": true,
+              "BlockPublicPolicy": true,
+              "IgnorePublicAcls": true,
+              "RestrictPublicBuckets": true
+            },
+            "OwnershipControls": {
+              "Rules": [
+                {
+                  "ObjectOwnership": "BucketOwnerEnforced"
+                }
+              ]
+            },
+            "BucketEncryption": {
+              "ServerSideEncryptionConfiguration": [
+                {
+                  "ServerSideEncryptionByDefault": {
+                    "SSEAlgorithm": "AES256"
+                  }
+                }
+              ]
+            },
+            "LifecycleConfiguration": {
+              "Rules": [
+                {
+                  "Id": "expire-temp-uploads",
+                  "Status": "Enabled",
+                  "ExpirationInDays": 30,
+                  "Prefix": "temp/"
+                }
+              ]
+            }
+          }
+        },
+        "SOSAlarm": {
+          "Type": "AWS::CloudWatch::Alarm",
+          "Properties": {
+            "AlarmName": "SafeHer-SOS-Triggered",
+            "MetricName": "SOSTriggers",
+            "Namespace": "SafeHer",
+            "Statistic": "Sum",
+            "Period": 60,
+            "EvaluationPeriods": 1,
+            "Threshold": 1,
+            "ComparisonOperator": "GreaterThanOrEqualToThreshold"
+          }
+        }
+      },
+      "Outputs": {
+        "ApiUrl": {
+          "Value": {
+            "Fn::Sub": "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+          },
+          "Export": {
+            "Name": "SafeHer-API-URL"
+          }
+        },
+        "UserPoolId": {
+          "Value": {
+            "Ref": "SafeHerUserPool"
+          },
+          "Export": {
+            "Name": "SafeHer-UserPool-ID"
+          }
+        },
+        "ClientId": {
+          "Value": {
+            "Ref": "SafeHerUserPoolClient"
+          },
+          "Export": {
+            "Name": "SafeHer-Client-ID"
+          }
+        },
+        "S3Bucket": {
+          "Value": {
+            "Ref": "MediaBucket"
+          },
+          "Export": {
+            "Name": "SafeHer-S3-Bucket"
+          }
+        }
+      }
+    },
+    "configValidationMode": "warn",
+    "serviceFilename": "serverless.yml",
+    "initialServerlessConfig": {
+      "service": "safeher",
+      "frameworkVersion": "3",
+      "provider": {
+        "$ref": "$[\"service\"][\"provider\"]"
+      },
+      "layers": {
+        "Utils": {
+          "path": "layers",
+          "name": "safeher-utils",
+          "compatibleRuntimes": {
+            "$ref": "$[\"service\"][\"provider\"][\"compiledCloudFormationTemplate\"][\"Resources\"][\"UtilsLambdaLayer\"][\"Properties\"][\"CompatibleRuntimes\"]"
+          },
+          "package": {
+            "artifact": "C:\\project1\\safeHer\\aws\\.serverless\\Utils.zip"
+          },
+          "artifactAlreadyUploaded": true
+        }
+      },
+      "functions": {
+        "$ref": "$[\"service\"][\"functions\"]"
+      },
+      "resources": {
+        "$ref": "$[\"service\"][\"resources\"]"
+      }
+    },
+    "layers": {
+      "$ref": "$[\"service\"][\"initialServerlessConfig\"][\"layers\"]"
+    },
+    "isDashboardMonitoringPreconfigured": false,
+    "artifact": "C:\\project1\\safeHer\\aws\\.serverless\\safeher.zip"
+  },
+  "package": {
+    "artifactDirectoryName": "serverless/safeher/prod/1772869396507-2026-03-07T07:43:16.507Z",
+    "artifact": "safeher.zip"
+  }
+}

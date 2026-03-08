@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeHer Theme Color Palette</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1A0B1E 0%, #2D1438 50%, #1A0B1E 100%);
+      color: #FBF3F0;
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 48px;
+      text-align: center;
+      margin-bottom: 16px;
+      font-weight: 900;
+      letter-spacing: -2px;
+    }
+
+    .tagline {
+      text-align: center;
+      font-size: 16px;
+      color: #D4A9AC;
+      margin-bottom: 60px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 24px;
+      margin-bottom: 60px;
+    }
+
+    .color-item {
+      background: rgba(61, 29, 74, 0.5);
+      backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(240, 212, 221, 0.3);
+      border-radius: 20px;
+      padding: 24px;
+      transition: all 0.3s ease;
+    }
+
+    .color-item:hover {
+      border-color: rgba(240, 212, 221, 0.5);
+      box-shadow: 0 12px 48px rgba(233, 155, 170, 0.15);
+      transform: translateY(-4px);
+    }
+
+    .color-swatch {
+      width: 100%;
+      height: 100px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .color-name {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #FBF3F0;
+    }
+
+    .color-hex {
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      color: #D4A9AC;
+      margin-bottom: 4px;
+    }
+
+    .color-usage {
+      font-size: 12px;
+      color: #9B7078;
+      line-height: 1.6;
+    }
+
+    .section {
+      margin-bottom: 60px;
+    }
+
+    .section-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: #F5B3C3;
+      border-bottom: 2px solid rgba(233, 155, 170, 0.3);
+      padding-bottom: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .animation-demo {
+      background: rgba(61, 29, 74, 0.5);
+      backdrop-filter: blur(10px);
+      border: 1.5px solid rgba(240, 212, 221, 0.3);
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 24px;
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .blob {
+      position: absolute;
+      filter: blur(60px);
+      border-radius: 50%;
+      opacity: 0.2;
+    }
+
+    .blob-1 {
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, rgba(233, 155, 170, 0.4), rgba(212, 163, 115, 0.1));
+      top: -150px;
+      left: -150px;
+      animation: ambientBlob1 15s ease-in-out infinite;
+    }
+
+    .blob-2 {
+      width: 280px;
+      height: 280px;
+      background: radial-gradient(circle, rgba(245, 179, 195, 0.3), rgba(230, 197, 168, 0.1));
+      top: 50%;
+      right: -100px;
+      animation: ambientBlob2 18s ease-in-out infinite;
+    }
+
+    @keyframes ambientBlob1 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(30px, -40px) scale(1.1); }
+    }
+
+    @keyframes ambientBlob2 {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(-40px, 30px) scale(1.05); }
+    }
+
+    .demo-content {
+      position: relative;
+      z-index: 1;
+      font-size: 24px;
+      font-weight: 700;
+      color: #FBF3F0;
+    }
+
+    .shimmer {
+      background: linear-gradient(
+        90deg,
+        #FBF3F0 0%,
+        #FFB3CA 25%,
+        #F5E6D3 50%,
+        #FFB3CA 75%,
+        #FBF3F0 100%
+      );
+      background-size: 1000px 100%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 8s linear infinite;
+      font-size: 32px;
+      font-weight: 700;
+      margin: 20px 0;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -1000px 0; }
+      100% { background-position: 1000px 0; }
+    }
+
+    .orbit-demo {
+      width: 160px;
+      height: 160px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .orbit-ring {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border: 2px solid rgba(233, 155, 170, 0.3);
+      border-radius: 50%;
+      animation: orbitRotate 3s linear infinite;
+    }
+
+    .orbit-button {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 80px;
+      height: 80px;
+      margin: -40px 0 0 -40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #E89BAA 0%, #D67B8F 100%);
+      box-shadow: 0 0 30px rgba(233, 155, 170, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 12px;
+      animation: orbitPulse 2s ease-in-out infinite;
+    }
+
+    @keyframes orbitRotate {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    @keyframes orbitPulse {
+      0%, 100% { 
+        box-shadow: 0 0 20px rgba(233, 155, 170, 0.4), 0 0 40px rgba(245, 179, 195, 0.2);
+      }
+      50% { 
+        box-shadow: 0 0 30px rgba(233, 155, 170, 0.6), 0 0 60px rgba(245, 179, 195, 0.3);
+      }
+    }
+
+    .code-block {
+      background: rgba(26, 11, 30, 0.8);
+      border: 1px solid rgba(240, 212, 221, 0.2);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #F5E6D3;
+      margin: 16px 0;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 40px 20px;
+      color: #9B7078;
+      font-size: 12px;
+      border-top: 1px solid rgba(240, 212, 221, 0.1);
+      margin-top: 60px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>SafeHer Theme</h1>
+    <p class="tagline">Deep Plum + Rose Gold + Blush + Champagne</p>
+
+    <!-- Primary Colors Section -->
+    <div class="section">
+      <h2 class="section-title">Primary Colors</h2>
+      <div class="palette-grid">
+        <div class="color-item">
+          <div class="color-swatch" style="background: #1A0B1E;"></div>
+          <div class="color-name">Deep Plum</div>
+          <div class="color-hex">#1A0B1E</div>
+          <div class="color-usage">Main background - dark berry tone</div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #2D1438;"></div>
+          <div class="color-name">Rich Plum</div>
+          <div class="color-hex">#2D1438</div>
+          <div class="color-usage">Surface layers and containers</div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #3D1D4A;"></div>
+          <div class="color-name">Plum Card</div>
+          <div class="color-hex">#3D1D4A</div>
+          <div class="color-usage">Card backgrounds with glass effect</div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #E89BAA;"></div>
+          <div class="color-name">Rose Gold</div>
+          <div class="color-hex">#E89BAA</div>
+          <div class="color-usage">Primary action color - SOS</div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #F5B3C3;"></div>
+          <div class="color-name">Blush</div>
+          <div class="color-hex">#F5B3C3</div>
+          <div class="color-usage">Light accents and highlights</div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #F5E6D3;"></div>
+          <div class="color-name">Champagne</div>
+          <div class="color-hex">#F5E6D3</div>
+          <div class="color-usage">Warm gold accent tones</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Accent Colors Section -->
+    <div class="section">
+      <h2 class="section-title">Accent Colors</h2>
+      <div class="palette-grid">
+        <div class="color-item">
+          <div class="color-swatch" style="background: #D4A373;"></div>
+          <div class="color-name">Rose Gold Accent</div>
+          <div class="color-hex">#D4A373</div>
+          <div class="color-usage">Warm secondary tone</div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #F2A896;"></div>
+          <div class="color-name">Soft Peach</div>
+          <div class="color-hex">#F2A896</div>
+          <div class="color-usage">Warm complement accent</div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #7FD9B5;"></div>
+          <div class="color-name">Soft Sage</div>
+          <div class="color-hex">#7FD9B5</div>
+          <div class="color-usage">Safe/positive status indicator</div>
+        </div>
+        <div class="color-item">
+          <div class="color-swatch" style="background: #FBF3F0;"></div>
+          <div class="color-name">Rose White</div>
+          <div class="color-hex">#FBF3F0</div>
+          <div class="color-usage">Luminous primary text color</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Animations Section -->
+    <div class="section">
+      <h2 class="section-title">Design Elements</h2>
+
+      <h3 style="font-size: 18px; margin: 30px 0 20px; color: #F5B3C3;">1. Glowing Ambient Blobs</h3>
+      <div class="animation-demo">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="demo-content">Floating Background Effects</div>
+      </div>
+      <div class="code-block">
+background: radial-gradient(circle, rgba(233, 155, 170, 0.4), ...);<br>
+animation: ambientBlob1 15s ease-in-out infinite;
+      </div>
+
+      <h3 style="font-size: 18px; margin: 30px 0 20px; color: #F5B3C3;">2. Shimmer Text</h3>
+      <div class="animation-demo">
+        <div class="demo-content">
+          <div class="shimmer">Shimmer Effect Text</div>
+        </div>
+      </div>
+      <div class="code-block">
+background: linear-gradient(90deg, #FBF3F0 0%, #FFB3CA 25%, #F5E6D3 50%, ...);<br>
+-webkit-background-clip: text;<br>
+animation: shimmer 8s linear infinite;
+      </div>
+
+      <h3 style="font-size: 18px; margin: 30px 0 20px; color: #F5B3C3;">3. Rotating Orbit Ring</h3>
+      <div class="animation-demo">
+        <div class="orbit-demo">
+          <div class="orbit-ring"></div>
+          <div class="orbit-button">SOS</div>
+        </div>
+      </div>
+      <div class="code-block">
+animation: orbitRotate 3s linear infinite;<br>
+box-shadow: 0 0 30px rgba(233, 155, 170, 0.6);
+      </div>
+
+      <h3 style="font-size: 18px; margin: 30px 0 20px; color: #F5B3C3;">4. Glass Cards</h3>
+      <div class="animation-demo" style="min-height: 200px;">
+        <div class="demo-content">Glass Card with Soft Pink Border</div>
+      </div>
+      <div class="code-block">
+background: rgba(61, 29, 74, 0.5);<br>
+backdrop-filter: blur(10px);<br>
+border: 1.5px solid rgba(240, 212, 221, 0.3);
+      </div>
+    </div>
+
+    <!-- Implementation Section -->
+    <div class="section">
+      <h2 class="section-title">Implementation</h2>
+      
+      <h3 style="font-size: 18px; margin: 20px 0 12px; color: #D4A9AC;">Files Updated</h3>
+      <ul style="margin-left: 20px; color: #D4A9AC; line-height: 2;">
+        <li>✅ src/styles/globalStyles.js - Color palette</li>
+        <li>✅ src/App.css - Animations and glass effects</li>
+        <li>✅ src/index.css - Global theme</li>
+        <li>✅ All screen components - Glass card styling</li>
+        <li>✅ New components - Theme utilities</li>
+      </ul>
+
+      <h3 style="font-size: 18px; margin: 30px 0 12px; color: #D4A9AC;">New Components Created</h3>
+      <ul style="margin-left: 20px; color: #D4A9AC; line-height: 2;">
+        <li>📦 src/components/theme/AmbientBlobs.jsx</li>
+        <li>📦 src/components/theme/OrbitSOSButton.jsx</li>
+        <li>📦 src/components/theme/ShimmerText.jsx</li>
+        <li>📦 src/components/theme/index.js</li>
+      </ul>
+    </div>
+
+    <div class="footer">
+      <p>SafeHer Theme v1.0 | Deep Plum + Rose Gold + Blush + Champagne</p>
+      <p>AI Safety Intelligence Platform | March 2026</p>
+    </div>
+  </div>
+</body>
+</html>
