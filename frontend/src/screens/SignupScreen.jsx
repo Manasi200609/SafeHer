@@ -64,23 +64,43 @@ const isValidPhoneFormat = (phone) => {
   return digits.length >= 10;
 };
 
-const Field = ({ label, value, onChange, placeholder, kb = "default", secure = false }) => (
-  <View style={s.inputGroup}>
-    <Text style={s.inputLabel}>{label}</Text>
-    <TextInput
-      style={s.inputField}
-      placeholder={placeholder}
-      placeholderTextColor={T.textDim}
-      keyboardType={kb}
-      secureTextEntry={secure}
-      autoCapitalize="none"
-      autoCorrect={false}
-      value={value}
-      onChangeText={onChange}
-      returnKeyType="next"
-    />
-  </View>
-);
+// ─── UPDATED FIELD COMPONENT WITH PASSWORD TOGGLE ───
+const Field = ({ label, value, onChange, placeholder, kb = "default", isPassword = false }) => {
+  const [hidePassword, setHidePassword] = useState(isPassword);
+
+  return (
+    <View style={s.inputGroup}>
+      <Text style={s.inputLabel}>{label}</Text>
+      <View style={s.inputWrapper}>
+        <TextInput
+          style={[s.inputField, isPassword && { paddingRight: 50 }]} // Add right padding to not overlap eye icon
+          placeholder={placeholder}
+          placeholderTextColor={T.textDim}
+          keyboardType={kb}
+          secureTextEntry={hidePassword}
+          autoCapitalize="none"
+          autoCorrect={false}
+          value={value}
+          onChangeText={onChange}
+          returnKeyType="next"
+        />
+        {isPassword && (
+          <TouchableOpacity 
+            style={s.eyeIcon} 
+            onPress={() => setHidePassword(!hidePassword)}
+            activeOpacity={0.7}
+          >
+            <Ionicons 
+              name={hidePassword ? "eye-off-outline" : "eye-outline"} 
+              size={22} 
+              color={T.muted} 
+            />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
+  );
+};
 
 const StepPill = ({ num, active, done }) => (
   <View style={[
@@ -191,7 +211,8 @@ export default function SignupScreen({ onBack, onSignup, onGoLogin }) {
                 <Field label="FULL NAME *"         value={form.name}     onChange={set("name")}     placeholder="Your name" />
                 <Field label="EMAIL ADDRESS *"     value={form.email}    onChange={set("email")}    placeholder="you@example.com" kb="email-address" />
                 <Field label="PHONE NUMBER"        value={form.phone}    onChange={set("phone")}    placeholder="+91 00000 00000" kb="phone-pad" />
-                <Field label="PASSWORD * (MIN 8)"  value={form.password} onChange={set("password")} placeholder="Create a password" secure />
+                {/* Updated the Password field to use isPassword */}
+                <Field label="PASSWORD * (MIN 8)"  value={form.password} onChange={set("password")} placeholder="Create a password" isPassword={true} />
 
                 <TouchableOpacity style={s.btnPrimaryTouch} onPress={goStep2} activeOpacity={0.85}>
                   <LinearGradient colors={[T.coral, "rgba(232,149,109,0.8)"]} style={s.btnPrimaryGrad} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
@@ -268,9 +289,14 @@ const s = StyleSheet.create({
   heading: { fontSize: 36, fontWeight: "900", color: T.white, lineHeight: 44, letterSpacing: 0.5, marginBottom: 8 },
   shimmerText: { color: T.muted, fontSize: 10, fontWeight: "800", letterSpacing: 2 },
   body: { paddingHorizontal: 28, paddingTop: 20, paddingBottom: 60 },
+  
+  // ── UPDATED INPUT STYLES ──
   inputGroup: { marginBottom: 20 },
   inputLabel: { color: T.muted, fontSize: 10, fontWeight: "800", letterSpacing: 1.5, marginBottom: 8 },
+  inputWrapper: { position: "relative", justifyContent: "center" },
   inputField: { backgroundColor: T.card, borderWidth: 1, borderColor: T.border, borderRadius: 16, paddingHorizontal: 16, height: 60, color: T.white, fontSize: 15, fontWeight: "500" },
+  eyeIcon: { position: "absolute", right: 16, height: "100%", justifyContent: "center" },
+  
   notice: { flexDirection: "row", alignItems: "flex-start", gap: 10, backgroundColor: "rgba(52,211,153,0.1)", borderWidth: 1, borderColor: "rgba(52,211,153,0.25)", borderRadius: 16, padding: 16, marginBottom: 30, marginTop: 10 },
   noticeText: { color: T.safe, fontSize: 12, lineHeight: 18, flex: 1, fontWeight: "600" },
   btnPrimaryTouch: { width: "100%", shadowColor: T.coral, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8 },

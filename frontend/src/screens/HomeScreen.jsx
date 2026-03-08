@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
-  Vibration, Animated, PanResponder, Linking, Dimensions,
-  Modal, ActivityIndicator, StatusBar, Image
+  Vibration, Animated, PanResponder, Dimensions,
+  Modal, ActivityIndicator, StatusBar, Image, Alert
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
@@ -62,7 +62,7 @@ const GeoBg = () => {
 };
 
 export default function HomeScreen({ onShowModal, onGoMap, onGoContacts, onGoSettings }) {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [activeRecording, setActiveRecording] = useState(null);
   const [showCallMenu, setShowCallMenu] = useState(false);
   const [isGeneratingCall, setIsGeneratingCall] = useState(false);
@@ -77,6 +77,27 @@ export default function HomeScreen({ onShowModal, onGoMap, onGoContacts, onGoSet
 
   const slideAnim = useRef(new Animated.Value(0)).current;
   const slideMax = W - 60 - 110;
+
+  const DEMO_FORCE_EMPTY_NETWORK = false; 
+
+  const checkNetwork = () => {
+    // Strictly check if they have added contacts to their network array
+    const hasContacts = user?.contacts && user.contacts.length > 0;
+
+    if (DEMO_FORCE_EMPTY_NETWORK || !hasContacts) {
+      Vibration.vibrate([200, 200, 200]); // Error buzz
+      Alert.alert(
+        "Guardian Network Empty",
+        "You must add at least one trusted contact to your network before dispatching an SOS.",
+        [
+          { text: "Add Contacts", onPress: onGoContacts },
+          { text: "Cancel", style: "cancel" }
+        ]
+      );
+      return false; // Blocks the slide
+    }
+    return true; // Allows the slide
+  };
 
   // ─── MONITOR RISK FOR PROACTIVE CHECK-IN ───
   useEffect(() => {
@@ -111,18 +132,30 @@ export default function HomeScreen({ onShowModal, onGoMap, onGoContacts, onGoSet
 
   const handleAutoSOS = () => {
     setShowCheckIn(false);
-    onShowModal(); // Triggers SOS Modal & SMS Logic
+    if (!checkNetwork()) return; // Blocks automatic SOS if network is empty
+
     Vibration.vibrate(1000);
+    if (onShowModal) onShowModal();
   };
 
+  // ─── SOS SLIDER LOGIC ───
   const panResponder = useRef(PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onPanResponderMove: (_, g) => { if (g.dx > 0 && g.dx < slideMax) slideAnim.setValue(g.dx); },
     onPanResponderRelease: (_, g) => {
       if (g.dx > slideMax * 0.7) {
+        
+        // Block Manual SOS slide if no contacts are set
+        if (!checkNetwork()) {
+          Animated.spring(slideAnim, { toValue: 0, useNativeDriver: false }).start();
+          return;
+        }
+
         Vibration.vibrate(200);
         Animated.spring(slideAnim, { toValue: slideMax, useNativeDriver: false }).start();
-        onShowModal();
+        
+        if (onShowModal) onShowModal(); 
+
         setTimeout(() => slideAnim.setValue(0), 1500);
       } else {
         Animated.spring(slideAnim, { toValue: 0, useNativeDriver: false }).start();
@@ -180,10 +213,7 @@ export default function HomeScreen({ onShowModal, onGoMap, onGoContacts, onGoSet
       <GeoBg />
 
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
-        {/* Top Nav */}
         <View style={s.navRow}>
-          
-          {/* ── UPDATED BRAND GROUP ── */}
           <View style={s.brandGroup}>
             <View style={s.logoFrame}>
               <Image source={require("../assets/icon.png")} style={s.logoImg} resizeMode="cover" />
@@ -200,7 +230,6 @@ export default function HomeScreen({ onShowModal, onGoMap, onGoContacts, onGoSet
           </View>
         </View>
         
-        {/* Status Header */}
         <View style={s.headerContainer}>
           <View style={[s.statusPill, { borderColor: aiStatus === "DANGER" ? T.danger : aiStatus === "WARNING" ? T.warning : T.safe, backgroundColor: `${aiStatus === "DANGER" ? T.danger : T.safe}15` }]}>
             <View style={[s.statusDot, { backgroundColor: aiStatus === "DANGER" ? T.danger : T.safe }]} />
@@ -212,7 +241,6 @@ export default function HomeScreen({ onShowModal, onGoMap, onGoContacts, onGoSet
           </View>
         </View>
 
-        {/* Priority Actions */}
         <View style={s.actionSection}>
           <Text style={s.sectionTitle}>PRIORITY SHIELD</Text>
           <TouchableOpacity onPress={toggleStealthRecord} style={s.cardTouch}>
@@ -262,8 +290,6 @@ export default function HomeScreen({ onShowModal, onGoMap, onGoContacts, onGoSet
         <View style={{ height: 40 }} />
       </ScrollView>
 
-      {/* ─── MODALS & OVERLAYS ─── */}
-      
       {/* 1. AI SYNTHESIS LOADING */}
       {isGeneratingCall && (
         <View style={s.overlay}>
@@ -306,6 +332,7 @@ export default function HomeScreen({ onShowModal, onGoMap, onGoContacts, onGoSet
           onHangUp={() => setCallData(null)}
         />
       )}
+
     </View>
   );
 }
@@ -314,25 +341,12 @@ const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: T.bg },
   scroll: { paddingHorizontal: 25, paddingTop: 50 },
   navRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 },
-  
-  // ── BRAND LAYOUT (WITH NEW LOGO) ──
   brandGroup: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  logoFrame: { 
-    width: 46, height: 46, 
-    borderRadius: 23, 
-    backgroundColor: "rgba(255, 255, 255, 0.02)", 
-    borderWidth: 1, borderColor: "rgba(232, 149, 109, 0.2)", 
-    alignItems: "center", justifyContent: "center", 
-    overflow: "hidden" 
-  },
-  logoImg: { 
-    width: 46, height: 46, 
-    transform: [{ scale: 1.6 }] 
-  },
+  logoFrame: { width: 46, height: 46, borderRadius: 23, backgroundColor: "rgba(255, 255, 255, 0.02)", borderWidth: 1, borderColor: "rgba(232, 149, 109, 0.2)", alignItems: "center", justifyContent: "center", overflow: "hidden" },
+  logoImg: { width: 46, height: 46, transform: [{ scale: 1.6 }] },
   brandTextWrap: { justifyContent: 'center' },
   brandName: { color: T.white, fontSize: 24, fontWeight: '900', letterSpacing: 1 },
   brandSub: { color: T.muted, fontSize: 10, fontWeight: '800', letterSpacing: 2, marginTop: 2 },
-  
   navIcons: { flexDirection: 'row', gap: 10 },
   iconBtn: { width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.05)", borderWidth: 1, borderColor: T.border, alignItems: 'center', justifyContent: 'center' },
   headerContainer: { alignItems: 'center', marginBottom: 40 },
@@ -372,5 +386,5 @@ const s = StyleSheet.create({
   checkInSub: { color: T.muted, textAlign: 'center', fontSize: 14, marginBottom: 30 },
   safeBtn: { backgroundColor: T.coral, paddingVertical: 18, paddingHorizontal: 40, borderRadius: 20, width: '100%', alignItems: 'center' },
   safeBtnText: { color: T.plum, fontWeight: '900', fontSize: 16, letterSpacing: 1 },
-  sosWarning: { color: T.danger, fontSize: 10, fontWeight: '800', marginTop: 20, letterSpacing: 1 }
+  sosWarning: { color: T.danger, fontSize: 10, fontWeight: '800', marginTop: 20, letterSpacing: 1 },
 });
