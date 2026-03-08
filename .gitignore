@@ -1,0 +1,11 @@
+# Dependency directories
+**/node_modules/
+**/.expo/
+
+# Build and environment files
+**/dist/
+**/.env
+**/*.log
+
+# OS generated files
+.DS_Store
